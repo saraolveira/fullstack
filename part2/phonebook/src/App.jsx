@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import axios from "axios"
+import phonebookService from "./services/phonebook.js"
 import People from "./components/People.jsx"
 import Filter from "./components/Filter.jsx"
 import Form from "./components/Form.jsx"
@@ -11,8 +11,8 @@ const App = () => {
     const [filter, setFilter] = useState("")
 
     useEffect(() => {
-        axios.get("http://localhost:3001/persons").then((response) => {
-            setPersons(response.data)
+        phonebookService.getAll().then((initialPhonebook) => {
+            setPersons(initialPhonebook)
         })
     }, [])
 
@@ -23,16 +23,56 @@ const App = () => {
             number: newNumber,
         }
 
-        const allNames = persons.map((person) => person.name)
-        if (allNames.includes(newName)) {
-            alert(`${newName} is already added to phonebook`)
+        const number = persons.find((p) => p.name === newName)
+        const changedNumber = { ...number, number: newNumber }
+        const id = changedNumber.id
+
+        if (persons.find((p) => p.name === newName)) {
+            if (
+                window.confirm(
+                    `${newName} is already added to phonebook, replace the old number with a new one?`
+                )
+            ) {
+                phonebookService
+                    .update(id, changedNumber)
+                    .then((returnedPerson) => {
+                        setPersons(
+                            persons.map((person) =>
+                                person.id !== id ? person : returnedPerson
+                            )
+                        )
+                        setNewName("")
+                        setNewNumber("")
+                    })
+
+                return
+            } else {
+                alert(
+                    `${newName} is already added to phonebook and you don't want to replace the number. Use a different name`
+                )
+                setNewName("")
+                setNewNumber("")
+                return
+            }
+        }
+
+        phonebookService.create(personObject).then((returnedPerson) => {
+            setPersons(persons.concat(returnedPerson))
             setNewName("")
             setNewNumber("")
-            return
+        })
+    }
+
+    const deletePerson = (id, name) => {
+        if (window.confirm(`Delete ${name} ?`)) {
+            // console.log(`delete ${id}`)
+            phonebookService.remove(id).then(() => {
+                // console.log(` ${name} has been deleted`)
+                phonebookService.getAll().then((updatedPhonebook) => {
+                    setPersons(updatedPhonebook)
+                })
+            })
         }
-        setPersons(persons.concat(personObject))
-        setNewName("")
-        setNewNumber("")
     }
 
     const handleNameChange = (event) => {
@@ -82,7 +122,7 @@ const App = () => {
             </form> */}
             <h2>Numbers</h2>
 
-            <People people={filteredPeople} />
+            <People people={filteredPeople} deletePerson={deletePerson} />
         </div>
     )
 }

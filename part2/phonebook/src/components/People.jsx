@@ -1,5 +1,5 @@
 import Person from "./Person.jsx"
-const People = ({ people }) => {
+const People = ({ people, deletePerson }) => {
     return (
         <>
             {people.map((person) => (
@@ -7,6 +7,7 @@ const People = ({ people }) => {
                     key={person.name}
                     name={person.name}
                     number={person.number}
+                    deletePerson={() => deletePerson(person.id, person.name)}
                 />
             ))}
         </>
