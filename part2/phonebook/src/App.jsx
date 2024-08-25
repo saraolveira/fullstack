@@ -3,12 +3,16 @@ import phonebookService from "./services/phonebook.js"
 import People from "./components/People.jsx"
 import Filter from "./components/Filter.jsx"
 import Form from "./components/Form.jsx"
+import Successfull from "./components/Successful.jsx"
+import Error from "./components/Error.jsx"
 
 const App = () => {
     const [persons, setPersons] = useState([])
     const [newName, setNewName] = useState("")
     const [newNumber, setNewNumber] = useState("")
     const [filter, setFilter] = useState("")
+    const [successMessage, setSuccessMesage] = useState(null)
+    const [errorMessage, setErrorMesage] = useState(null)
 
     useEffect(() => {
         phonebookService.getAll().then((initialPhonebook) => {
@@ -41,6 +45,20 @@ const App = () => {
                                 person.id !== id ? person : returnedPerson
                             )
                         )
+                        setSuccessMesage(`${newName}'s number was updated`)
+                        setTimeout(() => {
+                            setSuccessMesage(null)
+                        }, 5000)
+                        setNewName("")
+                        setNewNumber("")
+                    })
+                    .catch((error) => {
+                        setErrorMesage(
+                            `Information of ${newName} has already been removed from server`
+                        )
+                        setTimeout(() => {
+                            setErrorMesage(null)
+                        }, 5000)
                         setNewName("")
                         setNewNumber("")
                     })
@@ -58,6 +76,10 @@ const App = () => {
 
         phonebookService.create(personObject).then((returnedPerson) => {
             setPersons(persons.concat(returnedPerson))
+            setSuccessMesage(`Added ${newName}`)
+            setTimeout(() => {
+                setSuccessMesage(null)
+            }, 5000)
             setNewName("")
             setNewNumber("")
         })
@@ -96,7 +118,8 @@ const App = () => {
     return (
         <div>
             <h2>Phonebook</h2>
-
+            <Successfull message={successMessage} />
+            <Error message={errorMessage} />
             <Filter filter={filter} handleFilterChange={handleFilterChange} />
 
             <h2>add a new</h2>
