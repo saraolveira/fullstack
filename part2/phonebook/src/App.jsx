@@ -74,15 +74,25 @@ const App = () => {
             }
         }
 
-        phonebookService.create(personObject).then((returnedPerson) => {
-            setPersons(persons.concat(returnedPerson))
-            setSuccessMesage(`Added ${newName}`)
-            setTimeout(() => {
-                setSuccessMesage(null)
-            }, 5000)
-            setNewName("")
-            setNewNumber("")
-        })
+        phonebookService
+            .create(personObject)
+            .then((returnedPerson) => {
+                setPersons(persons.concat(returnedPerson))
+                setSuccessMesage(`Added ${newName}`)
+                setTimeout(() => {
+                    setSuccessMesage(null)
+                }, 5000)
+                setNewName("")
+                setNewNumber("")
+            })
+            .catch((error) => {
+                setErrorMesage(error.response.data.error)
+                setTimeout(() => {
+                    setErrorMesage(null)
+                }, 5000)
+                setNewName("")
+                setNewNumber("")
+            })
     }
 
     const deletePerson = (id, name) => {
